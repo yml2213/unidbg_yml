@@ -21,6 +21,10 @@ import keystone.KeystoneEncoded;
 import keystone.KeystoneMode;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,11 +57,11 @@ public class sina extends AbstractJni {
     ;
 
 
-    public String calculateS() {
+    public String calculateS_1() {
         List<Object> list = new ArrayList<>(10);
         list.add(vm.getJNIEnv());   // 第一个参数 env
         list.add(0);   // 第二个参数，实例方法是jobject，静态方法是jclazz，直接填0，一般用不到。
-        DvmObject<?> context = vm.resolveClass("android/context/Context").newObject(null);      // context
+        DvmObject<?> context = vm.resolveClass("android/content/Context").newObject(null);      // context
         list.add(vm.addLocalObject(context));
         list.add(vm.addLocalObject(new StringObject(vm, "12345")));
         list.add(vm.addLocalObject(new StringObject(vm, "r0ysue")));
@@ -69,6 +73,90 @@ public class sina extends AbstractJni {
 
         return result;
     }
+
+    public String calculateS_2() {
+
+        DvmObject<?> context = vm.resolveClass("android/content/Context").newObject(null);      // context
+        // 直接创建 argsArray
+        Object[] argsArray = {
+                vm.getJNIEnv(),
+                0,
+                vm.addLocalObject(context),
+                vm.addLocalObject(new StringObject(vm, "12345")),
+                vm.addLocalObject(new StringObject(vm, "r0ysue"))
+        };
+
+        Number[] numbers = new Number[]{module.callFunction(emulator, 0x1E7C + 1, argsArray)};
+        System.out.println("========");
+        System.out.println(numbers);
+        System.out.println(Arrays.toString(numbers));
+        System.out.println(numbers[0].intValue());
+        System.out.println(vm.getObject(numbers[0].intValue()));
+        System.out.println("========");
+
+
+        String result = vm.getObject(numbers[0].intValue()).getValue().toString();
+
+        return result;
+    }
+
+
+    public String calculateS() {
+        // 构建函数参数格式
+        List<Object> args = new ArrayList<>(10);
+        // 各种基本参数格式兼容
+        // 参数1：JNIEnv *env
+        args.add(vm.getJNIEnv());
+        // 参数2：jobject或jclass 用不到直接填0即可
+        // 创建 jobject， 如果没用到的话可以不写
+        // cNative = vm.resolveClass("com/xxx/xxx");
+        // DvmObject<?> cnative = cNative.newObject(null);
+        // args.add(cnative.hashCode());
+        args.add(0);
+        DvmObject<?> context = vm.resolveClass("android/content/Context").newObject(null);      // context
+        args.add(vm.addLocalObject(context));
+        // 参数3 字符串对象
+        String input = "12345";
+        args.add(vm.addLocalObject(new StringObject(vm, input)));
+
+        // 参数4 字符串对象
+        String input2 = "r0ysue";
+        args.add(vm.addLocalObject(new StringObject(vm, input2)));
+//        // 参数4 bytes 数组
+//        String input2 = "r0ysue";
+//        byte[] input_bytes = input2.getBytes(StandardCharsets.UTF_8);
+//        ByteArray input_byte_array = new ByteArray(vm, input_bytes);
+//        args.add(vm.addLocalObject(input_byte_array));
+        // 参数5 bool
+        // false 填 0，true 填 1
+//        args.add(1);
+        // unidbg 主动调用函数
+        // 第二个参数是函数偏移量(thumb 记得+1)
+        // 第三个参数是参数列表
+        Number number = module.callFunction(emulator, 0x1E7C + 1, args.toArray());
+
+        //        // unicorn trace（贼好用！！！堪比 ida trace！！！）
+        //        String traceFile = "trace.txt";
+        //        PrintStream traceStream = null;
+        //        try {
+        //            traceStream = new PrintStream(new FileOutputStream(traceFile), true);
+        //        } catch (FileNotFoundException e) {
+        //            e.printStackTrace();
+        //        }
+        //        // 核心 trace 开启代码，也可以自己指定函数地址和偏移量
+        //        emulator.traceCode(module.base, module.base + module.size).setRedirect(traceStream);
+//         获取最终返回值，同时运行过程中的汇编代码和寄存器值会写入到文件中
+        System.out.println("===================================");
+        System.out.println(vm.getObject(number.intValue()).getValue().toString());
+        System.out.println(vm.getObject(number.intValue()));
+        System.out.println(vm.getObject(number.intValue()).getValue());
+        System.out.println("===================================");
+
+        return vm.getObject(number.intValue()).getValue().toString();
+
+
+    }
+
 
     // 第一种打补丁
     public void patchVerify() {

@@ -42,7 +42,7 @@ public class kswgmain11420 extends AbstractJni implements IOResolver {
 
         // 创建Android虚拟机
         // vm = emulator.createDalvikVM();
-        vm = emulator.createDalvikVM(new File("E:\\codeData\\unidbg\\unidbg-android\\src\\test\\java\\com\\puji\\puji.apk"));
+        vm = emulator.createDalvikVM(new File("unidbg-android/src/test/java/com/puji/puji.apk"));
         // 设置是否打印Jni调用细节
         vm.setVerbose(true);
         new JniGraphics(emulator, vm).register(memory);
@@ -97,16 +97,16 @@ public class kswgmain11420 extends AbstractJni implements IOResolver {
         vm.addLocalObject(appkey);
         DvmInteger intergetobj = DvmInteger.valueOf(vm, 0);
         vm.addLocalObject(intergetobj);
-        ArrayObject arrayObject =  new ArrayObject(1);
-        StringObject appkey =  new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17" );
-        vm.addLocalObject(appkey);
-        DvmInteger intergetobj = DvmInteger.valueOf(vm, - 1 );
+//        ArrayObject arrayObject =  new ArrayObject(1);
+//        StringObject appkey =  new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17" );
+//        vm.addLocalObject(appkey);
+//        DvmInteger intergetobj = DvmInteger.valueOf(vm, - 1 );
         vm.addLocalObject(intergetobj);
-        DvmBoolean boolobj = DvmBoolean.valueOf(vm,  false );
+        DvmBoolean boolobj = DvmBoolean.valueOf(vm, false);
         vm.addLocalObject(boolobj);
-        StringObject appkey2 =  new StringObject(vm, "7e46b28a-8c93-4940-8238-4c60e64e3c81" );
+        StringObject appkey2 = new StringObject(vm, "7e46b28a-8c93-4940-8238-4c60e64e3c81");
         vm.addLocalObject(appkey2);
-        list.add(vm.addLocalObject(new ArrayObject("2321", appkey, -1, intergetobj, context, intergetobj, intergetobj)));
+//        list.add(vm.addLocalObject(new ArrayObject("2321", appkey, -1, intergetobj, context, intergetobj, intergetobj)));
         // 直接通过地址调用
         Number numbers = module.callFunction(emulator, 0x443c1, list.toArray());
         System.out.println("numbers:" + numbers);
@@ -218,8 +218,8 @@ public class kswgmain11420 extends AbstractJni implements IOResolver {
 
     public static void main(String[] args) throws FileNotFoundException {
         kswgmain11420 kk = new kswgmain11420();
-        kk.init_native();
-        kk.get_NS_sig3();
+//        kk.init_native();
+//        kk.get_NS_sig3();
     }
 }
 
