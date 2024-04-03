@@ -14,6 +14,7 @@ import com.github.unidbg.linux.android.dvm.array.ArrayObject;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmBoolean;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmInteger;
 import com.github.unidbg.memory.Memory;
+import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.sun.jna.Pointer;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,10 @@ public class Sig3 extends AbstractJni implements IOResolver {
         final Memory memory = emulator.getMemory();     // 模拟器的内存操作接口
         memory.setLibraryResolver(new AndroidResolver(23));     // 设置系统类解析
         vm = emulator.createDalvikVM(new File("unidbg-android/src/test/java/com/puji/puji.apk"));       // 创建Android虚拟机
+
+        new AndroidModule(emulator, vm).register(memory);
+
+        vm.loadLibrary(new File("unidbg-android/src/test/java/com/puji/libc++_shared.so"), false);
         DalvikModule dm = vm.loadLibrary(new File("unidbg-android/src/test/java/com/puji/libkwsgmain.so"), true);     // 加载so到虚拟内存
         module = dm.getModule();     // 获取本SO模块的句柄
 
@@ -47,7 +52,7 @@ public class Sig3 extends AbstractJni implements IOResolver {
         vm.setVerbose(true);
         dm.callJNI_OnLoad(emulator);        // 调用 JNI_OnLoad
 
-        cNative = vm.resolveClass("com.kuaishou.android.security.internal.dispatch");
+        cNative = vm.resolveClass("com/kuaishou/android/security/internal/dispatch/JNICLibrary");
 
     }
 
@@ -232,58 +237,14 @@ public class Sig3 extends AbstractJni implements IOResolver {
 
 
     public void init_native() throws FileNotFoundException {
-        // trace code
-//        String traceFile = "unidbg-android\\src\\test\\java\\com\\smile\\gifmaker3\\sig3_init_native.trc";
-//        GlobalData.ignoreModuleList.add("libc.so");
-//        GlobalData.ignoreModuleList.add("libhookzz.so");
-//        GlobalData.ignoreModuleList.add("libc++_shared.so");
-//        emulator.traceCode(module.base, module.base+module.size).setRedirect(new PrintStream(new FileOutputStream(traceFile), true));
 
-
-//        objArr[0] = [Ljava.lang.String;@8ac3204
-//        objArr[1] = d7b7d042-d4f2-4012-be60-d97ff2429c17
-//        objArr[2] = -1
-//        objArr[3] = false
-//        objArr[4] = com.yxcorp.gifshow.App@8ed4c34
-//        objArr[5] = null
-//        objArr[6] = false
-//        objArr[7] =
-
-
-        List<Object> list = new ArrayList<>(10);
-        list.add(vm.getJNIEnv());  // 第一个参数是env
-        DvmObject<?> thiz = vm.resolveClass("com/kuaishou/android/security/internal/dispatch/JNICLibrary").newObject(null);
-        list.add(vm.addLocalObject(thiz));  // 第二个参数，实例方法是jobject，静态方法是jclass，直接填0，一般用不到。
-        DvmObject<?> context = vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);  // context
-        vm.addLocalObject(context);
-        list.add(10418);  //参数1
-        StringObject appkey = new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17");  // SO文件有校验
-        vm.addLocalObject(appkey);
-        DvmInteger intergetobj = DvmInteger.valueOf(vm, 0);
-        vm.addLocalObject(intergetobj);
-//        ArrayObject arrayObject =  new ArrayObject(1);
-//        StringObject appkey =  new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17" );
-//        vm.addLocalObject(appkey);
-//        DvmInteger intergetobj = DvmInteger.valueOf(vm, - 1 );
-        vm.addLocalObject(intergetobj);
-        DvmBoolean boolobj = DvmBoolean.valueOf(vm, false);
-        vm.addLocalObject(boolobj);
-        StringObject appkey2 = new StringObject(vm, "7e46b28a-8c93-4940-8238-4c60e64e3c81");
-        vm.addLocalObject(appkey2);
-//        list.add(vm.addLocalObject(new ArrayObject("2321", appkey, -1, intergetobj, context, intergetobj, intergetobj)));
-        // 直接通过地址调用
-        Number numbers = module.callFunction(emulator, 0x443c1, list.toArray());
-        System.out.println("numbers:" + numbers);
-        DvmObject<?> object = vm.getObject(numbers.intValue());
-        String result = (String) object.getValue();
-        System.out.println("result:" + result);
+        System.out.println("result:" );
     }
 
     public static void main(String[] args) throws Exception {
         Sig3 sig3 = new Sig3();
-        sig3.init_native();
+//        sig3.init_native();
         String result = sig3.getSig3();
-
         log.info("================>{}", result);
         System.out.println(result);
     }

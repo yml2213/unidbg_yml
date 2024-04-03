@@ -219,7 +219,7 @@ public class kswgmain11420 extends AbstractJni implements IOResolver {
     public static void main(String[] args) throws FileNotFoundException {
         kswgmain11420 kk = new kswgmain11420();
         kk.init_native();
-//        kk.get_NS_sig3();
+        kk.get_NS_sig3();
     }
 }
 
