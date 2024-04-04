@@ -1,13 +1,9 @@
 package com.puji;
 
-import com.github.unidbg.*;
+import com.github.unidbg.AndroidEmulator;
+import com.github.unidbg.Emulator;
+import com.github.unidbg.EmulatorBuilder;
 import com.github.unidbg.Module;
-import com.github.unidbg.arm.backend.Backend;
-import com.github.unidbg.arm.backend.CodeHook;
-import com.github.unidbg.arm.backend.UnHook;
-import com.github.unidbg.arm.backend.UnicornBackend;
-import com.github.unidbg.arm.context.Arm32RegisterContext;
-import com.github.unidbg.arm.context.Arm64RegisterContext;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.IOResolver;
 import com.github.unidbg.file.linux.AndroidFileIO;
@@ -21,31 +17,26 @@ import com.github.unidbg.linux.android.dvm.array.ArrayObject;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmBoolean;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmInteger;
 import com.github.unidbg.memory.Memory;
-import com.github.unidbg.pointer.UnidbgPointer;
 import com.github.unidbg.spi.SyscallHandler;
-import com.github.unidbg.utils.Inspector;
 import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.github.unidbg.virtualmodule.android.JniGraphics;
 import com.sun.jna.Pointer;
+import lombok.extern.slf4j.Slf4j;
 import net.dongliu.apk.parser.bean.CertificateMeta;
-import unicorn.Unicorn;
-import unicorn.UnicornConst;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Slf4j
 public class kswgmain11420 extends AbstractJni implements IOResolver {
     private final AndroidEmulator emulator;
     private final VM vm;
     private final Module module;
 
-    kswgmain11420() throws FileNotFoundException {
+   public kswgmain11420() throws FileNotFoundException {
         // 创建模拟器实例，要模拟32位或者64位，在这里区分
         EmulatorBuilder<AndroidEmulator> builder = AndroidEmulatorBuilder.for32Bit().setProcessName("com.kwai.thanos");
         emulator = builder.build();
@@ -109,6 +100,7 @@ public class kswgmain11420 extends AbstractJni implements IOResolver {
         list.add(vm.addLocalObject(new ArrayObject(intergetobj, appkey, intergetobj, intergetobj, context, intergetobj, intergetobj)));
         // 直接通过地址调用
         Number numbers = module.callFunction(emulator, 0x443c1, list.toArray());
+
         System.out.println("numbers:" + numbers);
         DvmObject<?> object = vm.getObject(numbers.intValue());
         String result = (String) object.getValue();
@@ -181,32 +173,55 @@ public class kswgmain11420 extends AbstractJni implements IOResolver {
 //        emulator.traceCode(module.base, module.base+module.size).setRedirect(new PrintStream(new FileOutputStream(traceFile), true));
 
         System.out.println("_NS_sig3 start");
-        List<Object> list = new ArrayList<>(10);
-        list.add(vm.getJNIEnv()); // 第一个参数是env
-        DvmObject<?> thiz = vm.resolveClass("com/kuaishou/android/security/internal/dispatch/JNICLibrary").newObject(null);
-        list.add(vm.addLocalObject(thiz)); // 第二个参数，实例方法是jobject，静态方法是jclass，直接填0，一般用不到。
-        DvmObject<?> context = vm.resolveClass("com/yxcorp/gifshow/App").newObject(null); // context
-        vm.addLocalObject(context);
-        list.add(10418); //参数1
-        StringObject urlObj = new StringObject(vm, "/rest/app/eshop/ks/live/item/byGuest6bcab0543b7433b6d0771892528ef686");
-        vm.addLocalObject(urlObj);
-        ArrayObject arrayObject = new ArrayObject(urlObj);
-        StringObject appkey = new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17");
-        vm.addLocalObject(appkey);
-        DvmInteger intergetobj = DvmInteger.valueOf(vm, -1);
-        vm.addLocalObject(intergetobj);
-        DvmBoolean boolobj = DvmBoolean.valueOf(vm, false);
-        vm.addLocalObject(boolobj);
-        StringObject appkey2 = new StringObject(vm, "7e46b28a-8c93-4940-8238-4c60e64e3c81");
-        vm.addLocalObject(appkey2);
-        list.add(vm.addLocalObject(new ArrayObject(arrayObject, appkey, intergetobj, boolobj, context, null, boolobj, appkey2)));
-        // 直接通过地址调用
-        Number numbers = module.callFunction(emulator, 0x443c1, list.toArray());
-        System.out.println("numbers:" + numbers);
-        DvmObject<?> object = vm.getObject(numbers.intValue());
-        String result = (String) object.getValue();
-        System.out.println("result:" + result);
-        return result;
+        DvmClass dvmClass = vm.resolveClass("com/kuaishou/android/security/internal/dispatch/JNICLibrary");
+
+        //List<Object> list = new ArrayList<>(10);
+        //list.add(vm.getJNIEnv()); // 第一个参数是env
+        //DvmObject<?> thiz = vm.resolveClass("com/kuaishou/android/security/internal/dispatch/JNICLibrary").newObject(null);
+        //list.add(vm.addLocalObject(thiz)); // 第二个参数，实例方法是jobject，静态方法是jclass，直接填0，一般用不到。
+     // context
+        //vm.addLocalObject(context);
+        //list.add(10418); //参数1
+        //StringObject urlObj = new StringObject(vm, "/rest/app/eshop/ks/live/item/byGuest6bcab0543b7433b6d0771892528ef686");
+        //vm.addLocalObject(urlObj);
+        //ArrayObject arrayObject = new ArrayObject(urlObj);
+        //StringObject appkey = new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17");
+        //vm.addLocalObject(appkey);
+        //DvmInteger intergetobj = DvmInteger.valueOf(vm, -1);
+        //vm.addLocalObject(intergetobj);
+        //DvmBoolean boolobj = DvmBoolean.valueOf(vm, false);
+        //vm.addLocalObject(boolobj);
+        //StringObject appkey2 = new StringObject(vm, "7e46b28a-8c93-4940-8238-4c60e64e3c81");
+        //vm.addLocalObject(appkey2);
+        //list.add(vm.addLocalObject(new ArrayObject(arrayObject, appkey, intergetobj, boolobj, context, null, boolobj, appkey2)));
+        //// 直接通过地址调用
+        //Number numbers = module.callFunction(emulator, 0x443c1, list.toArray());
+        //System.out.println("numbers:" + numbers);
+        DvmObject<?> context = vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);
+        String methodSign = "doCommandNative(I[Ljava/lang/Object;)Ljava/lang/Object;";
+        //通过方法名调用
+        DvmObject<String> obj = dvmClass.callStaticJniMethodObject(emulator,
+                methodSign,
+                10418
+                , vm.addLocalObject(new ArrayObject(new ArrayObject(
+                        new StringObject(vm, "/rest/puji/photo/like6c5a00ae8d879cfeb8120740fbd2f463")),
+                        new StringObject(vm,"d7b7d042-d4f2-4012-be60-d97ff2429c17"),
+                        DvmInteger.valueOf(vm,-1),
+                        DvmBoolean.valueOf(vm,false),
+                        context,
+                        null,
+                        //ProxyDvmObject.createObject(vm,null),
+                        DvmBoolean.valueOf(vm,false),
+                        //DvmBoolean.valueOf(vm,false),
+                        new StringObject(vm,"")
+
+
+                )));
+        log.info(obj.toString());
+        //DvmObject<?> object = vm.getObject(numbers.intValue());
+        //String result = (String) object.getValue();
+        //System.out.println("result:" + result);
+        return obj.toString();
     }
 
     @Override
