@@ -6,11 +6,13 @@ import com.github.unidbg.Module;
 import com.github.unidbg.arm.backend.Unicorn2Factory;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.IOResolver;
+import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.android.dvm.*;
 import com.github.unidbg.linux.android.dvm.jni.ProxyClassFactory;
 import com.github.unidbg.linux.android.dvm.jni.ProxyDvmObject;
+import com.github.unidbg.linux.file.SimpleFileIO;
 import com.github.unidbg.memory.Memory;
 import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.github.unidbg.virtualmodule.android.JniGraphics;
@@ -24,7 +26,7 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 
     private final AndroidEmulator emulator;
     private final DvmClass JNICLibrary;
-    private final DvmObject<?>  JNICLibrary1;
+    private final DvmObject<?> JNICLibrary1;
     private final VM vm;
 
     public Sig3_2() {
@@ -73,12 +75,19 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
         return obj.getValue();
     }
 
-    @Override  // 文件访问监控
+
+    @Override
     public FileResult resolve(Emulator emulator, String pathname, int oflags) {
-        System.out.println("======文件访问监控到=========");
-        System.out.println("lilac open:"+pathname);
+        System.out.println("访问 ====> " + pathname);
+        if ("/proc/self/maps".equals(pathname)) {
+            return FileResult.success(new SimpleFileIO(oflags, new File("/Users/maps"), pathname));
+        } else if ("/proc/stat".equals(pathname)) {
+            return FileResult.success(new SimpleFileIO(oflags, new File("unidbg-android/src/test/java/com/rootfs/stat"), pathname));
+        }
         return null;
     }
+
+
     public static void main(String[] args) throws Exception {
         Sig3_2 signUtil = new Sig3_2();
 //        DvmObject<?> context = signUtil.vm.resolveClass("android/content/Context").newObject(null);      // context
