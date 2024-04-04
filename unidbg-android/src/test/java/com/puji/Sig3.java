@@ -154,42 +154,6 @@ public class Sig3 extends AbstractJni implements IOResolver {
         return super.callBooleanMethodV(vm, dvmObject, signature, vaList);
     }
 
-    public String get_NS_sig3() throws FileNotFoundException {
-        // trace code
-//        String traceFile = "unidbg-android\\src\\test\\java\\com\\smile\\gifmaker3\\sig3_new.trc";
-//        GlobalData.ignoreModuleList.add("libc.so");
-//        GlobalData.ignoreModuleList.add("libhookzz.so");
-//        GlobalData.ignoreModuleList.add("libc++_shared.so");
-//        emulator.traceCode(module.base, module.base+module.size).setRedirect(new PrintStream(new FileOutputStream(traceFile), true));
-
-        System.out.println("_NS_sig3 start");
-        List<Object> list = new ArrayList<>(10);
-        list.add(vm.getJNIEnv());  // 第一个参数是env
-        DvmObject<?> thiz = vm.resolveClass("com/kuaishou/android/security/internal/dispatch/JNICLibrary").newObject(null);
-        list.add(vm.addLocalObject(thiz));  // 第二个参数，实例方法是jobject，静态方法是jclass，直接填0，一般用不到。
-        DvmObject<?> context = vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);  // context
-        vm.addLocalObject(context);
-        list.add(10418);  //参数1
-        StringObject urlObj = new StringObject(vm, "/rest/app/eshop/ks/live/item/byGuest6bcab0543b7433b6d0771892528ef686");
-        vm.addLocalObject(urlObj);
-        ArrayObject arrayObject = new ArrayObject(urlObj);
-        StringObject appkey = new StringObject(vm, "d7b7d042-d4f2-4012-be60-d97ff2429c17");
-        vm.addLocalObject(appkey);
-        DvmInteger intergetobj = DvmInteger.valueOf(vm, -1);
-        vm.addLocalObject(intergetobj);
-        DvmBoolean boolobj = DvmBoolean.valueOf(vm, false);
-        vm.addLocalObject(boolobj);
-        StringObject appkey2 = new StringObject(vm, "7e46b28a-8c93-4940-8238-4c60e64e3c81");
-        vm.addLocalObject(appkey2);
-        list.add(vm.addLocalObject(new ArrayObject(arrayObject, appkey, intergetobj, boolobj, context, null, boolobj, appkey2)));
-        // 直接通过地址调用
-        Number numbers = module.callFunction(emulator, 0x41680, list.toArray());
-        System.out.println("numbers:" + numbers);
-        DvmObject<?> object = vm.getObject(numbers.intValue());
-        String result = (String) object.getValue();
-        System.out.println("result:" + result);
-        return result;
-    }
 
     @Override
     public FileResult resolve(Emulator emulator, String pathname, int oflags) {
@@ -222,18 +186,6 @@ public class Sig3 extends AbstractJni implements IOResolver {
         return super.callStaticObjectMethodV(vm, dvmClass, signature, vaList);
     }
 
-
-//    @Override
-//    public DvmObject<?> callObjectMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
-//        switch (signature) {
-////            case "com/yxcorp/gifshow/App->getPackageName()Ljava/lang/String;":
-////                return new StringObject(vm, "com.kwai.thanos");
-////            case "com/yxcorp/gifshow/App->getPackageManager()Landroid/content/pm/PackageManager;":
-////                return vm.resolveClass("android/content/pm/PackageManager").newObject(null);
-//
-//        }
-//        return super.callObjectMethodV(vm, dvmObject, signature, vaList);
-//    }
 
 
     public void init_native() throws FileNotFoundException {
