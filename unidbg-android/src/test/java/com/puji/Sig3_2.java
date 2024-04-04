@@ -9,22 +9,24 @@ import com.github.unidbg.file.IOResolver;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.android.dvm.*;
+import com.github.unidbg.linux.android.dvm.array.ArrayObject;
 import com.github.unidbg.linux.android.dvm.jni.ProxyClassFactory;
-import com.github.unidbg.linux.android.dvm.jni.ProxyDvmObject;
+import com.github.unidbg.linux.android.dvm.wrapper.DvmBoolean;
+import com.github.unidbg.linux.android.dvm.wrapper.DvmInteger;
 import com.github.unidbg.memory.Memory;
 import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.github.unidbg.virtualmodule.android.JniGraphics;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Map;
 
+@Slf4j
 public class Sig3_2 extends AbstractJni implements IOResolver {
 
     private final AndroidEmulator emulator;
     private final DvmClass JNICLibrary;
-    private final DvmObject<?>  JNICLibrary1;
+    private final DvmObject<?> JNICLibrary1;
     private final VM vm;
 
     public Sig3_2() {
@@ -64,21 +66,36 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
     }
 
     //    int i4, Object[] objArr
-    public String doCommandNative(int i4, Object[] objArr) {
-
+    public String doCommandNative(int i4) {
+        DvmObject<?> context = vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);
         String methodSign = "doCommandNative(I[Ljava/lang/Object;)Ljava/lang/Object;";
-//        System.out.println("objArr = " + objArr.toString());
+        StringObject obj = JNICLibrary.callStaticJniMethodObject(emulator,
+                methodSign,
+                i4
+                , vm.addLocalObject(new ArrayObject(new ArrayObject(
+                        new StringObject(vm, "/rest/puji/photo/like6c5a00ae8d879cfeb8120740fbd2f463")),
+                        new StringObject(vm,"d7b7d042-d4f2-4012-be60-d97ff2429c17"),
+                        DvmInteger.valueOf(vm,-1),
+                        DvmBoolean.valueOf(vm,false),
+                        context,
+                        null,
+                        //ProxyDvmObject.createObject(vm,null),
+                        DvmBoolean.valueOf(vm,false),
+                        //DvmBoolean.valueOf(vm,false),
+                        new StringObject(vm,"")
 
-        StringObject obj = JNICLibrary.callStaticJniMethodObject(emulator, methodSign, i4, ProxyDvmObject.createObject(vm, objArr));
+
+                )));
         return obj.getValue();
     }
 
     @Override  // 文件访问监控
     public FileResult resolve(Emulator emulator, String pathname, int oflags) {
         System.out.println("======文件访问监控到=========");
-        System.out.println("lilac open:"+pathname);
+        System.out.println("lilac open:" + pathname);
         return null;
     }
+
     public static void main(String[] args) throws Exception {
         Sig3_2 signUtil = new Sig3_2();
 //        DvmObject<?> context = signUtil.vm.resolveClass("android/content/Context").newObject(null);      // context
@@ -86,24 +103,23 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 
         DvmObject<?> context = signUtil.vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);
 //        DvmObject<?> context = signUtil.vm.resolveClass("com/yxcorp/gifshow/App").newObject(null); // context
-        signUtil.vm.addLocalObject(context);
+//        signUtil.vm.addLocalObject(context);
 
-
-        Object[] obj = new Object[8];
-
-        String[] abis = new String[]{"/rest/puji/photo/like6c5a00ae8d879cfeb8120740fbd2f463"};
-        ProxyDvmObject.createObject(signUtil.vm, abis);
-
-        obj[0] = ProxyDvmObject.createObject(signUtil.vm, abis);
-//        obj[0] = new String[]{"/rest/puji/photo/like6c5a00ae8d879cfeb8120740fbd2f463"};
-        obj[1] = "d7b7d042-d4f2-4012-be60-d97ff2429c17";
-        obj[2] = "-1";
-        obj[3] = "false";
-        obj[4] = context;
-        obj[5] = "null";
-        obj[6] = "false";
-        obj[7] = "";
-        String sign = signUtil.doCommandNative(10418, obj);
+//        Object[] obj = new Object[8];
+//
+//        String[] abis = new String[]{"/rest/puji/photo/like6c5a00ae8d879cfeb8120740fbd2f463"};
+//        ProxyDvmObject.createObject(signUtil.vm, abis);
+//
+//        obj[0] = ProxyDvmObject.createObject(signUtil.vm, abis);
+////        obj[0] = new String[]{"/rest/puji/photo/like6c5a00ae8d879cfeb8120740fbd2f463"};
+//        obj[1] = "d7b7d042-d4f2-4012-be60-d97ff2429c17";
+//        obj[2] = "-1";
+//        obj[3] = "false";
+//        obj[4] = context;
+//        obj[5] = "null";
+//        obj[6] = "false";
+//        obj[7] = "";
+        String sign = signUtil.doCommandNative(10418);
         System.out.println("sign=" + sign);
         signUtil.destroy();
     }
