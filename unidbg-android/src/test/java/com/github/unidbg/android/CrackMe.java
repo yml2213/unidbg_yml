@@ -6,6 +6,7 @@ import com.github.unidbg.Module;
 import com.github.unidbg.arm.HookStatus;
 import com.github.unidbg.arm.backend.DynarmicFactory;
 import com.github.unidbg.arm.context.RegisterContext;
+import com.github.unidbg.debugger.Debugger;
 import com.github.unidbg.hook.ReplaceCallback;
 import com.github.unidbg.hook.xhook.IxHook;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;

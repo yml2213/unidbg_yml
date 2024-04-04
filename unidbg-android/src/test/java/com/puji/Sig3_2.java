@@ -21,16 +21,16 @@ import com.github.unidbg.memory.Memory;
 import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.github.unidbg.virtualmodule.android.JniGraphics;
 import lombok.extern.slf4j.Slf4j;
-import lombok.extern.slf4j.Slf4j;
+
 
 import java.io.File;
 import java.io.IOException;
 
-@Slf4j
+
 @Slf4j
 public class Sig3_2 extends AbstractJni implements IOResolver {
-
-    private final AndroidEmulator emulator;
+    private final Emulator<?> emulator;
+//    private final AndroidEmulator emulator;
     private final DvmClass JNICLibrary;
     private final DvmObject<?> JNICLibrary1;
     private final VM vm;
@@ -46,11 +46,12 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 
         Memory memory = emulator.getMemory();
         memory.setLibraryResolver(new AndroidResolver(23));
-        vm = emulator.createDalvikVM(new File("unidbg-android/src/test/java/com/puji/puji.apk"));
+        vm = ((AndroidEmulator) emulator).createDalvikVM(new File("unidbg-android/src/test/java/com/puji/puji.apk"));
         vm.setDvmClassFactory(new ProxyClassFactory());
 
         vm.setJni(this);
         vm.setVerbose(true);
+
         emulator.getSyscallHandler().addIOResolver(this);  // 文件监控
         new AndroidModule(emulator, vm).register(memory);       // 使用 libandroid.so 的虚拟模块
         new JniGraphics(emulator, vm).register(memory);     // 使用 libjnigraphics.so 的虚拟模块
@@ -73,6 +74,7 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 
     //    int i4, Object[] objArr
     public String doCommandNative(int i4) {
+//        emulator.tracecode(module.base, module.base+module.size);
         DvmObject<?> context = vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);
         String methodSign = "doCommandNative(I[Ljava/lang/Object;)Ljava/lang/Object;";
         StringObject obj = JNICLibrary.callStaticJniMethodObject(emulator,
@@ -105,10 +107,9 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
             return FileResult.success(new SimpleFileIO(oflags, new File("/Users/maps"), pathname));
         } else if ("/proc/stat".equals(pathname)) {
             return FileResult.success(new SimpleFileIO(oflags, new File("unidbg-android/src/test/java/com/rootfs/stat"), pathname));
+        }
         return null;
     }
-    }
-
 
 
     public static void main(String[] args) throws Exception {
@@ -116,7 +117,7 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 //        DvmObject<?> context = signUtil.vm.resolveClass("android/content/Context").newObject(null);      // context
 //        DvmObject<?> context = signUtil.vm.resolveClass("android/app/Application", signUtil.vm.resolveClass("android/content/ContextWrapper", signUtil.vm.resolveClass("android/content/Context"))).newObject(null);
 
-        DvmObject<?> context = signUtil.vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);
+//        DvmObject<?> context = signUtil.vm.resolveClass("com/yxcorp/gifshow/App").newObject(null);
 //        DvmObject<?> context = signUtil.vm.resolveClass("com/yxcorp/gifshow/App").newObject(null); // context
 //        signUtil.vm.addLocalObject(context);
 
@@ -134,7 +135,7 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 //        obj[5] = "null";
 //        obj[6] = "false";
 //        obj[7] = "";
-        String sign = signUtil.doCommandNative(10418, obj);
+        String sign = signUtil.doCommandNative(10418);
         System.out.println("sign=" + sign);
         signUtil.destroy();
     }
