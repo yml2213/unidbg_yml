@@ -6,21 +6,27 @@ import com.github.unidbg.Module;
 import com.github.unidbg.arm.backend.Unicorn2Factory;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.IOResolver;
+import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.android.dvm.*;
 import com.github.unidbg.linux.android.dvm.array.ArrayObject;
+import com.github.unidbg.linux.android.dvm.array.ArrayObject;
 import com.github.unidbg.linux.android.dvm.jni.ProxyClassFactory;
+import com.github.unidbg.linux.android.dvm.jni.ProxyDvmObject;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmBoolean;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmInteger;
+import com.github.unidbg.linux.file.SimpleFileIO;
 import com.github.unidbg.memory.Memory;
 import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.github.unidbg.virtualmodule.android.JniGraphics;
+import lombok.extern.slf4j.Slf4j;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 
+@Slf4j
 @Slf4j
 public class Sig3_2 extends AbstractJni implements IOResolver {
 
@@ -89,12 +95,21 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
         return obj.getValue();
     }
 
-    @Override  // 文件访问监控
+
+
+    @Override
     public FileResult resolve(Emulator emulator, String pathname, int oflags) {
-        System.out.println("======文件访问监控到=========");
-        System.out.println("lilac open:" + pathname);
+
+        System.out.println("访问 ====> " + pathname);
+        if ("/proc/self/maps".equals(pathname)) {
+            return FileResult.success(new SimpleFileIO(oflags, new File("/Users/maps"), pathname));
+        } else if ("/proc/stat".equals(pathname)) {
+            return FileResult.success(new SimpleFileIO(oflags, new File("unidbg-android/src/test/java/com/rootfs/stat"), pathname));
         return null;
     }
+    }
+
+
 
     public static void main(String[] args) throws Exception {
         Sig3_2 signUtil = new Sig3_2();
@@ -119,7 +134,7 @@ public class Sig3_2 extends AbstractJni implements IOResolver {
 //        obj[5] = "null";
 //        obj[6] = "false";
 //        obj[7] = "";
-        String sign = signUtil.doCommandNative(10418);
+        String sign = signUtil.doCommandNative(10418, obj);
         System.out.println("sign=" + sign);
         signUtil.destroy();
     }
